@@ -10,7 +10,13 @@
 % ----------------------------
 \usepackage{fontspec}
 \usepackage{xeCJK}
-\setCJKmainfont{Noto Serif CJK SC}
+% 优先使用 Overleaf 自带的 Noto Serif CJK SC；本机回退到宋体
+% （本机的 Noto Serif SC 为可变字体，xdvipdfmx 无法嵌入，故直接用 SimSun）
+\IfFontExistsTF{Noto Serif CJK SC}{%
+    \setCJKmainfont{Noto Serif CJK SC}%
+}{%
+    \setCJKmainfont{SimSun}[AutoFakeBold=2.5, AutoFakeSlant]%
+}
 
 % ----------------------------
 % 页面设置与常用宏包
