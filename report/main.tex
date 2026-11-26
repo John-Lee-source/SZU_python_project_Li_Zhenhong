@@ -22,7 +22,11 @@
 % 页面设置与常用宏包
 % ----------------------------
 \usepackage{geometry}
-\geometry{left=1in, right=1in, top=1in, bottom=1in}
+% 上下边距略微收紧（左右保持 1in），配合 0.93 行距把正文控制在 4 页内
+\geometry{left=1in, right=1in, top=0.85in, bottom=0.85in}
+
+% 正文行距收紧到基准的 0.93 倍（不删减任何内容，仅排版压缩）
+\linespread{0.93}
 
 \usepackage{longtable}
 \usepackage{graphicx}
@@ -33,6 +37,7 @@
 \usepackage{float}
 \usepackage{booktabs}
 \usepackage{amsmath}
+\usepackage[font=small,labelfont=bf]{caption}  % 图表标题用小字号，节省版面
 \usepackage{hyperref}  % 提供 \url 命令，URL 中的下划线等特殊字符无需转义
 
 % ============================================================
@@ -56,7 +61,7 @@
 \underline{\makebox[8cm][c]{人工智能学院}}}\\[0.5cm]
 {\Large
 \noindent\makebox[3.2cm][l]{\textbf{专 \quad \quad 业}}
-\underline{\makebox[8cm][c]{}}}\\[0.5cm]
+\underline{\makebox[8cm][c]{人工智能}}}\\[0.5cm]
 {\Large
 \noindent\makebox[3.2cm][l]{\textbf{指导教师}}
 \underline{\makebox[8cm][c]{舒婷}}}\\[0.5cm]
@@ -65,13 +70,13 @@
 \underline{\makebox[3cm][c]{李镇宏}}
 \hspace{0.5cm}
 \textbf{学号}
-\underline{\makebox[3cm][c]{}}}\\[0.5cm]
+\underline{\makebox[3cm][c]{2025681090}}}\\[0.5cm]
 {\Large
 \noindent\makebox[3.2cm][l]{\textbf{实验时间}}
-\underline{\makebox[8cm][c]{2026年11月}}}\\[0.5cm]
+\underline{\makebox[8cm][c]{2026.11}}}\\[0.5cm]
 {\Large
 \noindent\makebox[3.2cm][l]{\textbf{提交时间}}
-\underline{\makebox[8cm][c]{2026年11月26日}}}\\[1.5cm]
+\underline{\makebox[8cm][c]{2026.11.26.}}}\\[1.5cm]
 
     \vfill
     \Large{\textbf{教务处制}}
@@ -85,21 +90,19 @@
 
 \section{Objectives}
 
-本次项目的任务是不依赖 PyTorch、OpenCLIP 包和 GPU，只用 NumPy 把 OpenCLIP
-ViT-B-32 图像编码器（image tower）的前向计算完整复现出来。模型权重由课程直接提供，
-不需要训练，但要求输出与课程给的独立 FP32 参考实现逐阶段数值对齐：
+项目任务是用 NumPy 把 OpenCLIP
+ViT-B-32 图像编码器（image tower）的前向计算完整复现出来。要求输出与课程给的独立 FP32 参考实现逐阶段数值对齐：
 内部 token 序列的容差是 atol=2e-4、rtol=2e-4，最终 512 维输出 token 的容差收紧到
 atol=2e-5、rtol=2e-4。
 
-我给自己定的目标比"跑通"多一层：我希望借这个项目把 ViT 的数据流在张量形状层面
-真正走一遍。以前读 ViT 论文时，patch embedding、multi-head attention 这些概念
-都停留在示意图上；这次必须亲手把 $[B,3,224,224]$ 变到 $[B,49,3072]$ 再变到
+我尝试把 ViT 的数据流在张量形状层面
+走一遍。要把 $[B,3,224,224]$ 变到 $[B,49,3072]$ 再变到
 $[B,50,768]$，每一个轴是什么含义都得想清楚，否则 reshape 和 transpose 一写就错。
 做完之后确实对"多头到底是怎么分的""CLS token 在哪里起作用"有了具体得多的理解。
 
 \section{Overview}
 
-我的实施过程大致分三步：
+实验步骤：
 
 \begin{enumerate}
     \item[第一步] 先通读附件里的 README、config.json 和 transformer\_steps.py。
@@ -131,7 +134,7 @@ $[B,50,768]$，每一个轴是什么含义都得想清楚，否则 reshape 和 t
 
 \section{Implementations}
 
-全部改动集中在 image\_encoder.py 一个文件里，下面按模块说关键实现。
+全部改动集中在 image\_encoder.py 一个文件里，我将按模块讲解。
 
 \subsection{patchify：从图像到 patch 序列（TODO-01）}
 
@@ -300,11 +303,9 @@ py launcher 注册表之后，我临时用 PYTHONPATH 指向 site-packages 解�
 TODO 部分的实现、调试和本报告由本人完成。过程中借助 AI 助手做了两件事：
 一是排查上述 Windows 多解释器的模块导入问题，二是在我拿不准 transpose 轴序时
 帮我核对 NumPy 文档里 transpose 参数的语义（"新顺序下各轴来自原数组的第几个轴"）。
-split\_heads 的多头组织方式我先自行查了 PyTorch MultiheadAttention 的文档和
-社区讨论，再用小数组手工验证后才写入代码。代码中所有关键步骤都附有我自己的
-中文注释，便于面试时逐行解释。
+split\_heads 的多头组织方式我先自行查了 PyTorch MultiheadAttention 的文档。
 
-完整代码与报告源文件已托管于 GitHub 仓库：
+ GitHub 仓库：
 \url{https://github.com/John-Lee-source/SZU_python_project_Li_Zhenhong}
 
 \newpage
